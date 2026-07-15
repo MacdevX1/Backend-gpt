@@ -39,6 +39,10 @@ connectdb()
 app.use('/api', authRoutes)
 app.use('/api', chatRoutes)
 
+app.get('/test', (req, res) => {
+  res.send('Hello World!')
+})
+
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' })
 })
