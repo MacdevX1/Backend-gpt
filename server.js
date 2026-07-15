@@ -10,7 +10,7 @@ const app = express()
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+    origin: process.env.FRONTEND_ORIGIN || 'http://ec2-3-104-37-144.ap-southeast-2.compute.amazonaws.com:3000',
     credentials: true
   })
 )
@@ -48,7 +48,7 @@ app.use((req, res) => {
 })
 
 const port = process.env.PORT || 3000
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
   console.log(`Server running on port ${port}`)
 })
 
