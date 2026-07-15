@@ -10,7 +10,7 @@ const app = express()
 
 app.use(
   cors({
-    origin: process.env.FRONTEND_ORIGIN || 'http://ec2-3-104-37-144.ap-southeast-2.compute.amazonaws.com:3000',
+    origin: process.env.FRONTEND_ORIGIN || 'http://ec2-3-104-37-144.ap-southeast-2.compute.amazonaws.com',
     credentials: true
   })
 )
