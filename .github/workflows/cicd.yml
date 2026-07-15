@@ -1,11 +1,12 @@
-name: Node.js CI
+name: Node.js CI/CD
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
 
 jobs:
-  build:
+  deploy:
     runs-on: self-hosted
 
     strategy:
@@ -13,21 +14,45 @@ jobs:
         node-version: [22.x]
 
     steps:
-      - uses: actions/checkout@v4
+      # Backup existing .env
+      - name: Backup .env
+        run: |
+          if [ -f .env ]; then
+            mv .env /tmp/env_backup
+          fi
 
-      - name: Use Node.js ${{ matrix.node-version }}
+      # Pull latest code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Restore .env
+      - name: Restore .env
+        run: |
+          if [ -f /tmp/env_backup ]; then
+            mv /tmp/env_backup .env
+          fi
+
+      # Setup Node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
+      # Install dependencies
+      - name: Install Dependencies
+        run: npm ci --omit=dev
 
-      - name: Build
+      # Build (if your project has a build step)
+      - name: Build Project
         run: npm run build --if-present
 
-      - name: Restart backend
+      # Restart PM2
+      - name: Restart Backend
         run: |
-          sudo pm2 restart backend || sudo pm2 start server.js --name backend
-          sudo pm2 save
+          if pm2 describe backend > /dev/null; then
+            pm2 restart backend
+          else
+            pm2 start server.js --name backend
+          fi
+          pm2 save
