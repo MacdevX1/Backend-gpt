@@ -14,45 +14,38 @@ jobs:
         node-version: [22.x]
 
     steps:
-      # Backup existing .env
-      - name: Backup .env
-        run: |
-          if [ -f .env ]; then
-            mv .env /tmp/env_backup
-          fi
-
-      # Pull latest code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Restore .env
       - name: Restore .env
         run: |
-          if [ -f /tmp/env_backup ]; then
-            mv /tmp/env_backup .env
+          if [ -f /home/ubuntu/backend.env ]; then
+            cp /home/ubuntu/backend.env .env
           fi
 
-      # Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
 
-      # Install dependencies
       - name: Install Dependencies
         run: npm ci --omit=dev
 
-      # Build (if your project has a build step)
       - name: Build Project
         run: npm run build --if-present
 
-      # Restart PM2
       - name: Restart Backend
         run: |
           if pm2 describe backend > /dev/null; then
-            pm2 restart backend
+            pm2 restart backend --update-env
           else
             pm2 start server.js --name backend
           fi
           pm2 save
+
+      - name: Verify Backend
+        run: |
+          sleep 5
+          pm2 status
+          curl http://localhost:3000/test
